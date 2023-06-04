@@ -1,0 +1,97 @@
+
+Page
+1
+of 2
+/*1. Write a query to display the first name, last name and salary of the top 5
+highest paid employees. Put them in descending order. Use tables Person.person,
+HumanResources.EmployeePayHistory. */
+SELECT TOP (5) p.[BusinessEntityID]
+,p.[FirstName]
+,p.[LastName]
+,e.[Rate]
+FROM [AdventureWorks2012].[Person].[Person] AS p, [AdventureWorks2012].
+[HumanResources].[EmployeePayHistory] AS e
+WHERE p.[BusinessEntityID] = e.[BusinessEntityID]
+ORDER BY e.[Rate] DESC
+/*2. Show BusinessEntityID, territory name and SalesYTD of all sales persons whose
+SalesYTD is greater than $500,000, regardless of whether they are assigned a
+territory. Use Sales.SalesPerson table and Sales.SalesTerritory table.*/
+SELECT p.[BusinessEntityID]
+,t.[CountryRegionCode]
+,p.[SalesYTD]
+FROM [AdventureWorks2012].[Sales].[SalesTerritory] AS t
+FULL OUTER JOIN [AdventureWorks2012].[Sales].[SalesPerson] AS p
+ON p.[TerritoryID] = t.[TerritoryID]
+WHERE p.[SalesYTD] > 500000
+/*3. Show ProductID, LocationID, Quantity of all the products whose inventory is
+less than 100.Â Use Production.ProductInventory*/
+SELECT [ProductID]
+,[LocationID]
+,[Quantity]
+FROM [AdventureWorks2012].[Production].[ProductInventory]
+WHERE [Quantity] < 100
+/*4. Are high earning (those earning more than average pay rate) male and female
+employees compensated equitably at Adventureworks? Consider both Payrate and
+Vacation time.
+The final table should show for each gender, the average vacation and average
+payrates but consider only those employees above the average pay.
+Use HumanResources.Employee and HumanResources.EmployeePayHistory.
+hint: you may use subqueries to find the average pay of all employees or run two
+different queries to find the average pay of all employees */
+SELECT e.[Gender]
+,AVG(e.[VacationHours]) AS 'Average Vacation Hours'
+,AVG(p.[Rate]) 'Average Pay Rate'
+FROM [AdventureWorks2012].[HumanResources].[Employee] AS e
+,[AdventureWorks2012].[HumanResources].[EmployeePayHistory] AS p
+WHERE e.[BusinessEntityID] = p.[BusinessEntityID] AND p.[Rate] >
+(SELECT AVG([Rate])
+FROM [AdventureWorks2012].[HumanResources].
+[EmployeePayHistory])
+GROUP BY e.[Gender]
+/*5. Show the customerIDs, total taxAmt, number of orders for all the customers who
+paid a total of more than 21000 in taxes and made more than 10 orders in store
+(OnlineFlag=0). Use Sales.SalesOrderHeader*/
+SELECT [CustomerID]
+,SUM([TaxAmt]) AS 'Total Tax Paid'
+,COUNT([SalesOrderID]) AS 'Total Orders'
+FROM [AdventureWorks2012].[Sales].[SalesOrderHeader]
+WHERE OnlineOrderFlag = 0
+GROUP BY CustomerID
+HAVING SUM([TaxAmt]) > 21000 AND COUNT([SalesOrderID]) > 10
+/*6. Does John T. Campbell wish to receive any email promotions (that is, the value
+for the column email promotions will be 1)? Use Person.person table. */
+SELECT [FirstName]
+,[MiddleName]
+,[LastName]
+,[EmailPromotion]
+FROM [AdventureWorks2012].[Person].[Person]
+WHERE [FirstName] LIKE 'John' AND [MiddleName] LIKE 'T' AND [LastName] LIKE
+'Campbell'
+/*7. Write a query to display each sales person's first name, last name, job title
+and the number of sales from last year, as well as this year YTD. In addition, Add
+a column showing the difference between the two to show whether the person is
+already selling more or less.
+Use Sales.SalesPerson, Person.Person, HumanResources.EmployeeÂ */
+SELECT p.[FirstName]
+,p.[LastName]
+,e.[JobTitle]
+,s.[SalesLastYear] AS 'Sales Last Year'
+,s.[SalesYTD] AS 'Sales This Year'
+,s.[SalesYTD] - s.SalesLastYear AS 'Sales difference between last year and
+this year'
+FROM [AdventureWorks2012].[Sales].[SalesPerson] AS s
+,[AdventureWorks2012].[HumanResources].[Employee] AS e
+,[AdventureWorks2012].[Person].[Person] AS p
+WHERE p.BusinessEntityID = e.BusinessEntityID AND s.BusinessEntityID =
+p.BusinessEntityID AND [JobTitle] LIKE '%Sales%'
+/*8. Show OrdeQty, the Name and the ListPrice of the order made by CustomerID
+11000. Use Sales.SalesOrderHeader, Sales.SalesOrderDetail, Production.Product */
+SELECT h.[CustomerID]
+,p.[Name]
+,d.[OrderQty] AS 'Order Quantity'
+,d.[LineTotal] AS 'Line Total'
+FROM [AdventureWorks2012].[Production].[Product] AS p
+,[AdventureWorks2012].[Sales].[SalesOrderDetail] AS d
+,[AdventureWorks2012].[Sales].[SalesOrderHeader] AS h
+WHERE d.[SalesOrderID] = h.[SalesOrderID] AND p.[ProductID] = d.[ProductID] AND
+h.[CustomerID] = 11000

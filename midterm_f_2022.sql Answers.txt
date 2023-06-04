@@ -1,0 +1,103 @@
+﻿Use AdventureWorks2012; 
+
+
+/* 1. Show ProductID, LocationID, Quantity of all the products whose inventory is less than 100. 
+Use Production.ProductInventory 
+[5 points] */
+
+SELECT [ProductID]
+      ,[LocationID]
+      ,[Quantity]
+  FROM [AdventureWorks2012].[Production].[ProductInventory]
+  WHERE [Quantity] < 100
+
+/* 2. Does John T. Campbell wish to receive any email promotions? 
+Use Person.person 
+[5 points] */
+
+SELECT FirstName, MiddleName, LastName, EmailPromotion  
+FROM Person.Person 
+WHERE FirstName='John' AND MiddleName='T' AND LastName='Campbell'
+
+
+/* 3. How many men and women take more sick leave hours than the average sick leave hours of all employees? 
+Use HumanResources.employee table 
+[10 points] */
+
+SELECT [Gender], count(*) as 'total'
+  FROM [AdventureWorks2012].[HumanResources].[Employee]
+   where SickLeaveHours > (select AVG(SickLeaveHours) FROM [AdventureWorks2012].[HumanResources].[Employee])
+  GROUP BY [Gender]
+
+/* 4. Which is the name of the most popular product being sold (in terms of total quantities sold) in the year 2012? 
+Use sales.SalesOrderDetail and Production.Product
+[10 points] */
+
+select top 1 s.ProductID, p.Name, sum( s.OrderQty)
+from Sales.SalesOrderDetail as s, Production.Product as p
+where s.ProductID=p.ProductID and YEAR(s.ModifiedDate) = 2012
+group by s.ProductID, p.Name
+order by sum(s.OrderQty) desc
+
+/* 5. Show the customerIDs, total taxAmt labeled as Total Tax Amount, number of orders labeled as Number of Orders for all the customers who paid a total of more than 21000 in taxes and made more than 10 orders in store 
+( OnlineFlag=0 for in store purchase). 
+Use Sales.SalesOrderHeader
+[10 points]
+*/
+
+SELECT CustomerID, SUM(TaxAmt) AS 'Total Tax Amount', COUNT(SalesOrderID) AS 'Number of Orders' 
+FROM Sales.SalesOrderHeader WHERE OnlineOrderFlag=0 
+GROUP BY CustomerID 
+HAVING SUM(TaxAmt) > 21000 AND COUNT(SalesOrderID) > 10
+
+/* 6 Show the product category, subcategory, name, and product ID for all products that belong to a category and subcategory. 
+These should be sorted alphabetically by category, then by subcategory, and then by product name.
+Use, Production.Product, Production.ProductSubcategory,Production.ProductCategory
+[10 points]
+*/
+
+SELECT c.Name AS 'Category Name'
+			,s.Name AS 'Product Subcategory Name'
+			,p.Name AS 'Product Name'
+			,p.ProductID AS 'Product ID'
+FROM Production.Product AS p
+			inner JOIN Production.ProductSubcategory AS s
+					on p.ProductSubcategoryID = s.ProductSubcategoryID
+			inner JOIN Production.ProductCategory AS c
+					on s.ProductCategoryID = c.ProductCategoryID
+ORDER BY c.Name, s.Name,p.Name;
+
+/* 7. Show the product ID, product name, and list price for each product where the list price is higher than the average standard cost for all products. 
+use production.product
+[10 points] */
+
+SELECT ProductID
+			,Name AS 'Product Name'
+			,ListPrice AS 'List Price'
+FROM Production.Product
+WHERE ListPrice > (SELECT avg(StandardCost ) FROM Production.Product);
+
+/* 8.  Find the product model IDs that have no product associated with them. 
+Use Production.Product table and the Production.ProductModel table  
+[10 points] */
+
+SELECT m.ProductModelID, m.Name AS model_name,  p.ProductID,  p.Name AS product_name
+FROM Production.ProductModel AS m
+left outer join Production.Product AS p
+ON p.ProductModelID=m.ProductModelID
+WHERE p.ProductID is null;
+
+/* 9 How many unique products were sold each year? This should be sorted by the year.
+Use sales.salesorderdetail
+[10 points]
+*/
+
+select count( distinct ProductID) as 'number of products', year(ModifiedDate) as 'year'
+from sales.SalesOrderDetail
+group by YEAR(ModifiedDate)
+order by year(ModifiedDate)
+
+/* 10 In your own words, write a business question that you can answer by querying the database and using at least 2 of the SQL concepts covered in class.
+ Then write the complete SQL query that will provide the information that you are seeking.
+ [10 points] */
+
